@@ -39,17 +39,25 @@ get_uplanetname() {
         return 0
     fi
     
-    # Try to extract from swarm.key
+    # Try to extract from swarm.key (ẐEN mode - private constellation)
     if [[ -f "${HOME}/.ipfs/swarm.key" ]]; then
         local name=$(cat "${HOME}/.ipfs/swarm.key" | tail -n 1)
         if [[ -n "${name}" ]]; then
+            echo -e "${GREEN}ẐEN mode: Using swarm.key for private constellation${NC}" >&2
             echo "${name}"
             return 0
         fi
     fi
     
-    # ORIGIN - developpment area -
-    echo -e "${YELLOW}No swarm.key found. ORIGIN UPLANETNAME...${NC}" >&2
+    # ORIGIN mode - Public development area
+    # Open to all developers and learners
+    # For ẐEN mode, Captains must complete DRAGON training:
+    # - GIT: https://pad.p2p.legal/GIT
+    # - SHELL: https://pad.p2p.legal/SHELL
+    # - Docker: https://pad.p2p.legal/Docker#
+    # - NextCloud: https://pad.p2p.legal/NextCloud#
+    echo -e "${YELLOW}ORIGIN mode: Public development namespace (no swarm.key)${NC}" >&2
+    echo -e "${YELLOW}For ẐEN mode, complete DRAGON training and obtain swarm.key${NC}" >&2
     local new_name="ORIGIN"
     echo "${new_name}"
 }

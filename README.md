@@ -32,6 +32,8 @@ ISBP is a simple, elegant protocol for IPFS node auto-discovery using standardiz
 curl http://node-ip:12345/
 ```
 
+**Detailed usage guide:** [docs/HOWTO_USE.md](docs/HOWTO_USE.md)
+
 ## Protocol Specification
 
 ### Endpoint
@@ -210,7 +212,7 @@ ISBP-spec/
 ├── beacon.sh               # Simplified beacon server (port 12345)
 ├── bootstrap.txt           # Bootstrap node list
 ├── requirements.txt        # Python dependencies
-├── LICENSE                 # AGPL-3.0
+├── LICENSE                 # GPL-3.0
 │
 ├── docs/
 │   └── ZEN_ECONOMY.md      # UPlanet ẐEN economic model
