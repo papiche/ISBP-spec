@@ -1,0 +1,16 @@
+# ISBP Bootstrap Nodes
+# Format: /ip4/{IP}/tcp/4001/p2p/{IPFSNODEID}
+# or:     /dnsaddr/{domain}/tcp/4001/p2p/{IPFSNODEID}
+#
+# These nodes serve as initial contact points for swarm discovery.
+# Any node can become a bootstrap by being added to this list.
+#################################################################
+
+# UPlanet ORIGIN - Primary Bootstrap
+/ip4/149.102.158.67/tcp/4001/p2p/12D3KooWL2FcDJ41U9SyLuvDmA5qGzyoaj2RoEHiJPpCvY8jvx9u
+
+#################################################################
+# Add your node to the official ISBP bootstrap list:
+# Contact: support@qo-op.com
+# Or submit a PR to this repository
+#################################################################

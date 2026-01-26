@@ -1,7 +1,0 @@
-base58
-cryptography
-duniterpy
-jwcrypto
-pgpy
-pynentry
-pynacl
