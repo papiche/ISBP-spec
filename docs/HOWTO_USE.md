@@ -396,6 +396,282 @@ Connection timed out
 
 **Solution:** Try other bootstrap nodes or check firewall rules.
 
+## Testing
+
+ISBP-spec includes a comprehensive test suite to verify all functionality.
+
+### Quick Test
+
+```bash
+# Run all tests
+make test
+
+# Run tests in quiet mode (summary only)
+make test-quick
+
+# Run tests with verbose output
+make test-verbose
+
+# Or run directly
+./tests/run_all.sh
+```
+
+### Test Suites
+
+| Test Suite | Description |
+|------------|-------------|
+| `test_keygen.sh` | Key generation and determinism |
+| `test_wallet.sh` | Wallet balance operations |
+| `test_economy.sh` | PAF payments and degradation phases |
+| `test_cooperative.sh` | Tax and 3x1/3 allocation |
+| `test_accounting.sh` | Double-entry accounting coherence |
+
+### Example Output
+
+```
+╔═══════════════════════════════════════════════════════════════╗
+║       🧪 ISBP - IPFS Station Beacon Protocol                  ║
+║                   Test Suite                                  ║
+╚═══════════════════════════════════════════════════════════════╝
+
+  Testing keygen exists... PASS
+  Testing key determinism... PASS
+  Testing balance conservation... PASS
+  ...
+
+╔═══════════════════════════════════════════════════════════════╗
+║                    📊 TEST SUMMARY                            ║
+╠═══════════════════════════════════════════════════════════════╣
+║  Total test suites:  5                                       ║
+║  Passed:             5                                       ║
+║  Failed:             0                                       ║
+╠═══════════════════════════════════════════════════════════════╣
+║  ✓ ALL TESTS PASSED                                          ║
+╚═══════════════════════════════════════════════════════════════╝
+```
+
+## Makefile Commands
+
+The project includes a Makefile for common operations:
+
+```bash
+# Show all available commands
+make help
+
+# Check dependencies
+make check-deps
+
+# Initialize environment
+make init
+
+# Run demo sequence
+make demo
+
+# Show wallet balances
+make show-balances
+
+# Clean temporary files
+make clean
+```
+
+### All Available Commands
+
+| Category | Command | Description |
+|----------|---------|-------------|
+| **Setup** | `make check-deps` | Check required dependencies |
+| | `make install-deps` | Install dependencies (Debian/Ubuntu) |
+| | `make init` | Initialize ISBP environment |
+| **Testing** | `make test` | Run all tests |
+| | `make test-quick` | Run tests (quiet mode) |
+| | `make test-verbose` | Run tests with detailed output |
+| **Demo** | `make demo` | Run complete demo sequence |
+| | `make keys` | Generate demo keys |
+| | `make beacon` | Start beacon server |
+| | `make economy` | Run ZEN economy cycle |
+| | `make cooperative` | Run cooperative allocation |
+| **Simulation** | `make sim` | Run constellation economic simulation |
+| | `make sim-small` | Small satellite (100 users, 1 station) |
+| | `make sim-medium` | Regional constellation (500 users) |
+| | `make sim-large` | Mega constellation (2000 users) |
+| | `make sim-json` | Output simulation as JSON |
+| | `make sim-html` | Open interactive HTML simulator |
+| **Maintenance** | `make clean` | Clean generated files |
+| | `make clean-all` | Clean everything (including ~/.isbp) |
+
+### Demo Sequence
+
+Run a complete demonstration of the economic cycle:
+
+```bash
+make demo
+```
+
+This will:
+1. Initialize wallets with demo balances
+2. Run cooperative allocation (tax + 3x1/3)
+3. Run economy cycle (PAF payments)
+4. Show final balances
+
+### Accounting Verification
+
+The demo ensures **accounting coherence**: total Ẑen across all wallets is conserved after every operation.
+
+```bash
+# After any economic operation
+make show-balances
+```
+
+Example output:
+```
+Current wallet balances (~/.isbp/wallets/):
+
+  uplanet.CASH:             241.33 Ẑen
+  uplanet.ASSETS:           283.34 Ẑen
+  uplanet.RnD:              283.33 Ẑen
+  uplanet.IMPOT:            150.00 Ẑen
+  secret.NODE:              14.00 Ẑen
+  captain.MULTIPASS:        28.00 Ẑen
+  ─────────────────────────────────
+  TOTAL:                    1000.00 Ẑen
+```
+
+## Economic Simulation
+
+ISBP-spec includes a comprehensive constellation economic simulator to model and validate business viability.
+
+### Quick Simulation
+
+```bash
+# Run with default parameters (500 users, 5 stations)
+make sim
+
+# Predefined scenarios
+make sim-small      # 100 users, 1 station, 1 dev
+make sim-medium     # 500 users, 5 stations, 2 devs, 1 CM
+make sim-large      # 2000 users, 15 stations, 5 devs, 3 CMs
+```
+
+### Custom Simulation
+
+```bash
+# Custom parameters
+make sim USERS=1000 STATIONS=10 DEVS=3 CMS=2
+
+# Full customization
+make sim-custom USERS=1000 STATIONS=10 DEVS=3 CMS=2 PAF=14 MPCT=75
+
+# JSON output (for integration)
+make sim-json USERS=500 STATIONS=5
+
+# CSV output
+make sim-csv USERS=500 STATIONS=5
+```
+
+### Simulation Parameters
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `USERS` | Total users (MULTIPASS + ZEN Cards) | 500 |
+| `STATIONS` | Number of stations (nodes) | 5 |
+| `DEVS` | Number of developers | 2 |
+| `CMS` | Number of community managers | 1 |
+| `PAF` | Weekly infrastructure fee (Ẑen) | 14 |
+| `MPCT` | Percentage of MULTIPASS users | 80 |
+
+### Interactive HTML Simulator
+
+Open the visual simulator in your browser:
+
+```bash
+make sim-html
+```
+
+Or open directly: `docs/simulator.html`
+
+Features:
+- Real-time parameter adjustment with sliders
+- Preset scenarios (Small/Medium/Large)
+- KPI dashboard (break-even, margin, jobs created)
+- Financial projections (per cycle and yearly)
+- 3×1/3 cooperative allocation visualization
+- Ecological impact (forest acquisition)
+- Viability assessment
+
+### Understanding the Output
+
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║       🏛️ ISBP Constellation Economic Simulator                     ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+📊 CONFIGURATION
+  Total users:              500
+  MULTIPASS:                400 (80%)
+  ZEN Cards:                100 (20%)
+  Stations:                 5
+  Developers:               2
+  Community Managers:       1
+
+📈 CAPACITY
+  Max MULTIPASS:            1250
+  Max ZEN Cards:            120
+  Utilization rate:         48.00%
+
+💰 REVENUES (per 4-week cycle)
+  MULTIPASS fees:           1600.00 Ẑ
+  ZEN Card fees:            384.62 Ẑ
+  Total (HT):               1587.69 Ẑ
+
+💸 COSTS (per 4-week cycle)
+  Captain wages (3×PAF):    840.00 Ẑ
+  Developer salaries:       8680.00 Ẑ
+  CM salaries:              1360.00 Ẑ
+
+📊 RESULTS
+  Gross margin:             747.69 Ẑ
+  Net result:               -9292.31 Ẑ
+
+🌱 3×1/3 ALLOCATION (when positive)
+  🏦 Treasury (CASH):       1/3 of net result
+  🔬 R&D:                   1/3 of net result
+  🌳 Assets:                1/3 of net result → Forest acquisition
+
+🎯 VIABILITY ASSESSMENT
+  ✅ VIABLE - Positive net result within capacity
+  ⚠️ OPERATIONAL - Reduce R&D or increase users
+  ❌ NOT VIABLE - Insufficient revenue
+```
+
+### Economic Model
+
+The simulator implements the ZEN Economy principles:
+
+1. **Revenue Sources**:
+   - MULTIPASS: Weekly fee × users × 4 weeks
+   - ZEN Cards: Annual fee ÷ 13 cycles
+
+2. **Cost Structure**:
+   - Captain wages: 3 × PAF × stations × 4 weeks
+   - Developer salaries: Monthly rate per dev
+   - CM salaries: Monthly rate per CM
+
+3. **Tax Calculation**:
+   - 15% if result ≤ 42,500 Ẑ
+   - 25% if result > 42,500 Ẑ
+
+4. **Cooperative Allocation** (when profitable):
+   - 1/3 → Treasury (CASH) - Operational reserve
+   - 1/3 → R&D - Research & Development
+   - 1/3 → Assets - Real assets (forest-gardens)
+
+### Capacity Constraints
+
+Each station can support:
+- **250 MULTIPASS users** (10 GB uDRIVE each)
+- **24 ZEN Card holders** (128 GB NextCloud each)
+
+The simulator warns when capacity is exceeded.
+
 ## Next Steps
 
 ### Learning Path

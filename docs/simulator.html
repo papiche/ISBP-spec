@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISBP Constellation Economic Simulator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-color: #0c0a14;
+            --panel-bg: rgba(20, 18, 30, 0.95);
+            --primary: #00d4ff;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --text: #e0e0e0;
+            --muted: #7f8c8d;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-color);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .panel {
+            background: var(--panel-bg);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+        
+        .panel h2 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .slider-group {
+            margin-bottom: 20px;
+        }
+        
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .slider-label {
+            font-weight: 500;
+            color: var(--text);
+        }
+        
+        .slider-value {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--primary);
+            transition: all 0.2s;
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--primary);
+        }
+        
+        .slider-info {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .kpi-card {
+            background: rgba(0, 212, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+        
+        .kpi-title {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .kpi-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .kpi-card.positive .kpi-value { color: var(--success); }
+        .kpi-card.warning .kpi-value { color: var(--warning); }
+        .kpi-card.negative .kpi-value { color: var(--danger); }
+        
+        .financial-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .financial-item:last-child {
+            border-bottom: none;
+        }
+        
+        .financial-label {
+            color: var(--text);
+        }
+        
+        .financial-value {
+            font-weight: 600;
+        }
+        
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+        
+        .allocation-bar {
+            display: flex;
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .allocation-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--bg-color);
+            transition: all 0.3s;
+        }
+        
+        .allocation-segment:hover {
+            filter: brightness(1.1);
+        }
+        
+        .segment-treasury { background: #3498db; }
+        .segment-rnd { background: #f39c12; }
+        .segment-assets { background: #27ae60; }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        
+        .impact-box {
+            background: linear-gradient(135deg, rgba(39, 174, 96, 0.2), rgba(39, 174, 96, 0.05));
+            border-left: 4px solid var(--success);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .impact-box h3 {
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+        
+        .viability-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        
+        .viability-badge.viable {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+        
+        .viability-badge.warning {
+            background: rgba(243, 156, 18, 0.2);
+            color: var(--warning);
+            border: 2px solid var(--warning);
+        }
+        
+        .viability-badge.danger {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+        
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .preset-btn {
+            padding: 10px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .preset-btn:hover {
+            background: var(--primary);
+            color: var(--bg-color);
+        }
+        
+        .capacity-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .capacity-fill {
+            height: 100%;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+        
+        .capacity-fill.ok { background: var(--success); }
+        .capacity-fill.warning { background: var(--warning); }
+        .capacity-fill.danger { background: var(--danger); }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8rem; }
+            .grid { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ ISBP Constellation Simulator</h1>
+            <p class="subtitle">Economic simulation for UPlanet ẐEN constellations</p>
+        </div>
+        
+        <div class="preset-buttons">
+            <button class="preset-btn" onclick="loadPreset('small')">🛰️ Small Satellite</button>
+            <button class="preset-btn" onclick="loadPreset('medium')">🌟 Regional Constellation</button>
+            <button class="preset-btn" onclick="loadPreset('large')">🚀 Mega Constellation</button>
+        </div>
+        
+        <div class="grid">
+            <!-- Configuration Panel -->
+            <div class="panel">
+                <h2>📊 Configuration</h2>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">👥 Total Users</span>
+                        <span class="slider-value" id="usersValue">500</span>
+                    </div>
+                    <input type="range" id="users" class="slider" min="10" max="5000" step="10" value="500">
+                    <div class="slider-info">MULTIPASS + ZEN Card holders</div>
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">🏠 MULTIPASS %</span>
+                        <span class="slider-value" id="multipassPctValue">80%</span>
+                    </div>
+                    <input type="range" id="multipassPct" class="slider" min="50" max="95" step="5" value="80">
+                    <div class="slider-info">Remaining are ZEN Card holders</div>
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">🖥️ Stations</span>
+                        <span class="slider-value" id="stationsValue">5</span>
+                    </div>
+                    <input type="range" id="stations" class="slider" min="1" max="25" step="1" value="5">
+                    <div class="slider-info">Each station: 250 MULTIPASS or 24 ZEN Cards max</div>
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">💻 Developers</span>
+                        <span class="slider-value" id="devsValue">2</span>
+                    </div>
+                    <input type="range" id="devs" class="slider" min="0" max="10" step="1" value="2">
+                    <div class="slider-info">R&D team funded by cooperative</div>
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">📢 Community Managers</span>
+                        <span class="slider-value" id="cmsValue">1</span>
+                    </div>
+                    <input type="range" id="cms" class="slider" min="0" max="5" step="1" value="1">
+                    <div class="slider-info">Community animation team</div>
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">⚡ PAF (Weekly)</span>
+                        <span class="slider-value" id="pafValue">14 Ẑ</span>
+                    </div>
+                    <input type="range" id="paf" class="slider" min="5" max="25" step="1" value="14">
+                    <div class="slider-info">Infrastructure participation fee</div>
+                </div>
+                
+                <!-- Capacity indicator -->
+                <div style="margin-top: 20px; padding: 15px; background: rgba(0,212,255,0.05); border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Capacity Utilization</span>
+                        <span id="capacityPct">0%</span>
+                    </div>
+                    <div class="capacity-bar">
+                        <div class="capacity-fill" id="capacityFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- KPIs Panel -->
+            <div class="panel">
+                <h2>📈 Key Performance Indicators</h2>
+                
+                <div class="kpi-grid">
+                    <div class="kpi-card" id="breakEvenCard">
+                        <div class="kpi-title">Break-Even</div>
+                        <div class="kpi-value" id="breakEven">0</div>
+                    </div>
+                    <div class="kpi-card" id="marginCard">
+                        <div class="kpi-title">Gross Margin</div>
+                        <div class="kpi-value" id="grossMargin">0%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Jobs Created</div>
+                        <div class="kpi-value" id="jobs">0</div>
+                    </div>
+                    <div class="kpi-card" id="netResultCard">
+                        <div class="kpi-title">Net Result/Cycle</div>
+                        <div class="kpi-value" id="netResult">0 Ẑ</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <span class="viability-badge" id="viabilityBadge">Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Financial Panel -->
+            <div class="panel">
+                <h2>💰 Financial Summary (per 4-week cycle)</h2>
+                
+                <div class="financial-item">
+                    <span class="financial-label">💳 MULTIPASS Revenue</span>
+                    <span class="financial-value positive" id="revenueMultipass">0 Ẑ</span>
+                </div>
+                <div class="financial-item">
+                    <span class="financial-label">👑 ZEN Card Revenue</span>
+                    <span class="financial-value positive" id="revenueZencard">0 Ẑ</span>
+                </div>
+                <div class="financial-item">
+                    <span class="financial-label">📊 Total Revenue (HT)</span>
+                    <span class="financial-value positive" id="revenueTotal">0 Ẑ</span>
+                </div>
+                <div class="financial-item">
+                    <span class="financial-label">🖥️ Captain Wages (3×PAF)</span>
+                    <span class="financial-value negative" id="costCaptain">0 Ẑ</span>
+                </div>
+                <div class="financial-item">
+                    <span class="financial-label">🔬 R&D Costs</span>
+                    <span class="financial-value negative" id="costRD">0 Ẑ</span>
+                </div>
+                <div class="financial-item">
+                    <span class="financial-label">🏛️ Corporate Tax</span>
+                    <span class="financial-value negative" id="tax">0 Ẑ</span>
+                </div>
+                <div class="financial-item" style="border-top: 2px solid var(--primary); padding-top: 15px;">
+                    <span class="financial-label" style="font-weight: 700;">✨ Net Result</span>
+                    <span class="financial-value" id="netResultDetail" style="font-size: 1.2rem;">0 Ẑ</span>
+                </div>
+            </div>
+            
+            <!-- Allocation Panel -->
+            <div class="panel">
+                <h2>🌱 3×1/3 Cooperative Allocation</h2>
+                
+                <div class="allocation-bar">
+                    <div class="allocation-segment segment-treasury" id="barTreasury" style="width: 33.33%">Treasury</div>
+                    <div class="allocation-segment segment-rnd" id="barRnd" style="width: 33.33%">R&D</div>
+                    <div class="allocation-segment segment-assets" id="barAssets" style="width: 33.34%">Assets</div>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3498db;"></div>
+                        <span>🏦 Treasury: <strong id="allocTreasury">0 Ẑ</strong></span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f39c12;"></div>
+                        <span>🔬 R&D: <strong id="allocRnd">0 Ẑ</strong></span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #27ae60;"></div>
+                        <span>🌳 Assets: <strong id="allocAssets">0 Ẑ</strong></span>
+                    </div>
+                </div>
+                
+                <div class="impact-box">
+                    <h3>🌲 Ecological Impact</h3>
+                    <p>This cycle finances the acquisition of <strong id="forestM2">0</strong> m² of forest-garden!</p>
+                    <p style="margin-top: 10px; font-size: 0.9rem; color: var(--muted);">
+                        Yearly projection: <strong id="yearlyForest">0</strong> m² (<strong id="yearlyNet">0</strong> Ẑ net result)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Constants
+        const C = {
+            WEEKS_PER_CYCLE: 4,
+            CYCLES_PER_YEAR: 13,
+            TAX_THRESHOLD: 42500,
+            TAX_RATE_REDUCED: 0.15,
+            TAX_RATE_NORMAL: 0.25,
+            TVA_RATE: 0.20,
+            MULTIPASS_CAPACITY: 250,
+            ZENCARD_CAPACITY: 24,
+            MULTIPASS_FEE: 1,
+            ZENCARD_FEE: 50,
+            DEV_SALARY: 4340,
+            CM_SALARY: 1360,
+            FOREST_PRICE: 2,
+        };
+        
+        // Format functions
+        const formatNumber = n => new Intl.NumberFormat('fr-FR').format(Math.round(n));
+        const formatCurrency = n => `${formatNumber(n)} Ẑ`;
+        
+        // DOM elements
+        const sliders = {
+            users: document.getElementById('users'),
+            multipassPct: document.getElementById('multipassPct'),
+            stations: document.getElementById('stations'),
+            devs: document.getElementById('devs'),
+            cms: document.getElementById('cms'),
+            paf: document.getElementById('paf'),
+        };
+        
+        // Calculate and update
+        function calculate() {
+            // Get values
+            const users = parseInt(sliders.users.value);
+            const multipassPct = parseInt(sliders.multipassPct.value) / 100;
+            const stations = parseInt(sliders.stations.value);
+            const devs = parseInt(sliders.devs.value);
+            const cms = parseInt(sliders.cms.value);
+            const paf = parseInt(sliders.paf.value);
+            
+            // Update value displays
+            document.getElementById('usersValue').textContent = users;
+            document.getElementById('multipassPctValue').textContent = (multipassPct * 100) + '%';
+            document.getElementById('stationsValue').textContent = stations;
+            document.getElementById('devsValue').textContent = devs;
+            document.getElementById('cmsValue').textContent = cms;
+            document.getElementById('pafValue').textContent = paf + ' Ẑ';
+            
+            // Derived values
+            const nbMultipass = Math.floor(users * multipassPct);
+            const nbZencard = users - nbMultipass;
+            
+            // Capacity
+            const maxUsers = stations * C.MULTIPASS_CAPACITY * multipassPct + 
+                           stations * C.ZENCARD_CAPACITY * (1 - multipassPct);
+            const utilizationRate = (users / maxUsers) * 100;
+            
+            document.getElementById('capacityPct').textContent = Math.round(utilizationRate) + '%';
+            const capacityFill = document.getElementById('capacityFill');
+            capacityFill.style.width = Math.min(utilizationRate, 100) + '%';
+            capacityFill.className = 'capacity-fill ' + 
+                (utilizationRate > 100 ? 'danger' : utilizationRate > 80 ? 'warning' : 'ok');
+            
+            // Revenue (per cycle)
+            const revenueMultipass = nbMultipass * C.MULTIPASS_FEE * C.WEEKS_PER_CYCLE;
+            const revenueZencardYearly = nbZencard * C.ZENCARD_FEE;
+            const revenueZencard = revenueZencardYearly / C.CYCLES_PER_YEAR;
+            const revenueTTC = revenueMultipass + revenueZencard;
+            const tva = revenueTTC * C.TVA_RATE;
+            const revenueHT = revenueTTC - tva;
+            
+            // Costs (per cycle)
+            const costCaptain = stations * paf * 3 * C.WEEKS_PER_CYCLE;
+            const costDevs = devs * C.DEV_SALARY;
+            const costCMs = cms * C.CM_SALARY;
+            const costRD = costDevs + costCMs;
+            const totalCosts = costCaptain + costRD;
+            
+            // Results
+            const grossMargin = revenueHT - costCaptain;
+            const resultBeforeTax = grossMargin - costRD;
+            const taxRate = resultBeforeTax > C.TAX_THRESHOLD ? C.TAX_RATE_NORMAL : C.TAX_RATE_REDUCED;
+            const taxAmount = resultBeforeTax > 0 ? resultBeforeTax * taxRate : 0;
+            const netResult = resultBeforeTax - taxAmount;
+            
+            // Allocation (3x1/3)
+            const allocTreasury = netResult > 0 ? netResult / 3 : 0;
+            const allocRnd = netResult > 0 ? netResult / 3 : 0;
+            const allocAssets = netResult > 0 ? netResult / 3 : 0;
+            const forestM2 = allocAssets / C.FOREST_PRICE;
+            
+            // KPIs
+            const grossMarginPct = revenueHT > 0 ? (grossMargin / revenueHT) * 100 : 0;
+            const breakEven = Math.ceil(totalCosts / (C.MULTIPASS_FEE * C.WEEKS_PER_CYCLE));
+            const jobs = devs + cms;
+            
+            // Yearly
+            const yearlyNet = netResult * C.CYCLES_PER_YEAR;
+            const yearlyForest = forestM2 * C.CYCLES_PER_YEAR;
+            
+            // Update UI
+            document.getElementById('breakEven').textContent = formatNumber(breakEven);
+            document.getElementById('grossMargin').textContent = Math.round(grossMarginPct) + '%';
+            document.getElementById('jobs').textContent = jobs;
+            document.getElementById('netResult').textContent = formatCurrency(netResult);
+            
+            // KPI colors
+            const breakEvenCard = document.getElementById('breakEvenCard');
+            breakEvenCard.className = 'kpi-card ' + (users >= breakEven ? 'positive' : 'negative');
+            
+            const marginCard = document.getElementById('marginCard');
+            marginCard.className = 'kpi-card ' + (grossMarginPct >= 50 ? 'positive' : grossMarginPct >= 0 ? 'warning' : 'negative');
+            
+            const netResultCard = document.getElementById('netResultCard');
+            netResultCard.className = 'kpi-card ' + (netResult > 0 ? 'positive' : 'negative');
+            
+            // Financial details
+            document.getElementById('revenueMultipass').textContent = formatCurrency(revenueMultipass);
+            document.getElementById('revenueZencard').textContent = formatCurrency(revenueZencard);
+            document.getElementById('revenueTotal').textContent = formatCurrency(revenueHT);
+            document.getElementById('costCaptain').textContent = '-' + formatCurrency(costCaptain);
+            document.getElementById('costRD').textContent = '-' + formatCurrency(costRD);
+            document.getElementById('tax').textContent = '-' + formatCurrency(taxAmount);
+            
+            const netResultDetail = document.getElementById('netResultDetail');
+            netResultDetail.textContent = formatCurrency(netResult);
+            netResultDetail.className = 'financial-value ' + (netResult >= 0 ? 'positive' : 'negative');
+            
+            // Allocation
+            document.getElementById('allocTreasury').textContent = formatCurrency(allocTreasury);
+            document.getElementById('allocRnd').textContent = formatCurrency(allocRnd);
+            document.getElementById('allocAssets').textContent = formatCurrency(allocAssets);
+            document.getElementById('forestM2').textContent = formatNumber(forestM2);
+            document.getElementById('yearlyForest').textContent = formatNumber(yearlyForest);
+            document.getElementById('yearlyNet').textContent = formatCurrency(yearlyNet);
+            
+            // Allocation bar visibility
+            const allocBar = document.querySelector('.allocation-bar');
+            allocBar.style.opacity = netResult > 0 ? '1' : '0.3';
+            
+            // Viability badge
+            const badge = document.getElementById('viabilityBadge');
+            if (netResult > 0 && utilizationRate <= 100) {
+                badge.className = 'viability-badge viable';
+                badge.textContent = '✅ VIABLE - Positive net result within capacity';
+            } else if (netResult > 0) {
+                badge.className = 'viability-badge warning';
+                badge.textContent = '⚠️ PROFITABLE BUT OVERCAPACITY - Add stations';
+            } else if (grossMargin > 0) {
+                badge.className = 'viability-badge warning';
+                badge.textContent = '⚠️ OPERATIONAL - Reduce R&D or increase users';
+            } else {
+                badge.className = 'viability-badge danger';
+                badge.textContent = '❌ NOT VIABLE - Insufficient revenue';
+            }
+        }
+        
+        // Presets
+        function loadPreset(preset) {
+            switch(preset) {
+                case 'small':
+                    sliders.users.value = 100;
+                    sliders.multipassPct.value = 80;
+                    sliders.stations.value = 1;
+                    sliders.devs.value = 1;
+                    sliders.cms.value = 0;
+                    sliders.paf.value = 14;
+                    break;
+                case 'medium':
+                    sliders.users.value = 500;
+                    sliders.multipassPct.value = 80;
+                    sliders.stations.value = 5;
+                    sliders.devs.value = 2;
+                    sliders.cms.value = 1;
+                    sliders.paf.value = 14;
+                    break;
+                case 'large':
+                    sliders.users.value = 2000;
+                    sliders.multipassPct.value = 80;
+                    sliders.stations.value = 15;
+                    sliders.devs.value = 5;
+                    sliders.cms.value = 3;
+                    sliders.paf.value = 14;
+                    break;
+            }
+            calculate();
+        }
+        
+        // Event listeners
+        Object.values(sliders).forEach(slider => {
+            slider.addEventListener('input', calculate);
+        });
+        
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+</html>
