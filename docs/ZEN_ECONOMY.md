@@ -89,19 +89,20 @@ This secret:
 │  │ ZEN Card Satellite (Contribution - 50 Ẑen/year)                         ││
 │  │ Services: NextCloud 128Go + Consultative vote                           ││
 │  │                                                                         ││
-│  │ Wallet Flow (3x1/3 allocation):                                         ││
+│  │ Wallet Flow (33/33/33/1 allocation via UPLANET.official.sh):            ││
 │  │   UPLANETNAME_G1 → UPLANETNAME_SOCIETY → USER_ZENCARD                  ││
 │  │                                                                         ││
-│  │   USER_ZENCARD → UPLANETNAME_TREASURY (33.33%)                         ││
-│  │                → UPLANETNAME_RND (33.33%)                              ││
-│  │                → UPLANETNAME_ASSETS (33.34%)                           ││
+│  │   USER_ZENCARD → USER_MULTIPASS (33% - crédit usage retourné)          ││
+│  │                → UPLANETNAME_RND (33% - R&D)                           ││
+│  │                → UPLANETNAME_ASSETS (33% - actifs durables)            ││
+│  │                → CAPTAIN_MULTIPASS (1% - prime de gestion)             ││
 │  └─────────────────────────────────────────────────────────────────────────┘│
 │                                                                              │
 │  ┌─────────────────────────────────────────────────────────────────────────┐│
 │  │ ZEN Card Constellation (Contribution - 540 Ẑen/3years)                  ││
 │  │ Services: 1/24 GPU access + Premium IA + Full vote                      ││
 │  │                                                                         ││
-│  │ Same 3x1/3 allocation as Satellite                                      ││
+│  │ Same 33/33/33/1 allocation as Satellite                                 ││
 │  └─────────────────────────────────────────────────────────────────────────┘│
 │                                                                              │
 │  ┌─────────────────────────────────────────────────────────────────────────┐│
@@ -188,9 +189,10 @@ All wallets are derived from `UPLANETNAME`:
 │     CASH ──┬──▶ NODE (14 Ẑen) - Armateur                        │
 │            └──▶ CAPTAIN MULTIPASS (28 Ẑen) - Salary             │
 │                                                                  │
-│  3️⃣ 3x1/3 ALLOCATION (ZEN.COOPERATIVE.3x1-3.sh)                 │
+│  3️⃣ WEEKLY COOPERATIVE ALLOCATION (ZEN.COOPERATIVE.3x1-3.sh)    │
+│     (from collected rental fees - CAPTAIN_DEDICATED)             │
 │                                                                  │
-│     CAPTAIN_DEDICATED (Surplus)                                  │
+│     CAPTAIN_DEDICATED (loyers NOSTRCARD/PLAYER)                  │
 │            │                                                     │
 │            ├──▶ IS provision (15-25%) → IMPOT                   │
 │            │                                                     │
@@ -198,6 +200,15 @@ All wallets are derived from `UPLANETNAME`:
 │                    ├──▶ 33.33% → TREASURY (CASH)                │
 │                    ├──▶ 33.33% → RnD                            │
 │                    └──▶ 33.34% → ASSETS                         │
+│                                                                  │
+│  3️⃣ᵇ ZEN CARD CONTRIBUTION ALLOCATION (UPLANET.official.sh)     │
+│     (from Parrain/Contributeur direct payment)                   │
+│                                                                  │
+│     USER_ZENCARD (contribution reçue)                            │
+│            ├──▶ 33% → USER_MULTIPASS (crédit usage retourné)    │
+│            ├──▶ 33% → RnD                                       │
+│            ├──▶ 33% → ASSETS                                    │
+│            └──▶  1% → CAPTAIN_MULTIPASS (prime gestion)         │
 │                                                                  │
 │  4️⃣ BURN (Monthly)                                              │
 │                                                                  │
