@@ -1,70 +1,61 @@
 #!/usr/bin/env python3
-"""
-Convert Duniter G1 Public Key to IPFS PeerID
-
-The G1 public key is a base58-encoded ed25519 public key.
-This script adds the IPFS multihash prefix and re-encodes as PeerID.
+"""Convert Duniter v1/v2 public key to IPNS key.
 
 Usage:
-    ./g1_to_ipfs.py DsEx1pSxxxxxx
-
-Example:
-    $ ./g1_to_ipfs.py DsEx1pS33RHBH9vJnQ7A2GXZPF3CptdKLPa8RYx2f6BUJD
-    12D3KooWL2FcDJ41U9SyLuvDmA5qGzyoaj2RoEHiJPpCvY8jvx9u
-
-License: AGPL-3.0
+    g1_to_ipfs.py <pubkey_or_ss58>  → IPNS key
 """
-
 import sys
 import base58
+import hashlib
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
 
-def g1_to_ipfs(g1_pubkey: str) -> str:
-    """
-    Convert G1 public key to IPFS PeerID.
-    
-    G1 format:
-        - Base58-encoded raw ed25519 public key (32 bytes)
-    
-    IPFS PeerID format (for ed25519):
-        - Multihash prefix: 0x00 0x24 0x08 0x01 0x12 0x20 (6 bytes)
-        - Raw ed25519 public key: 32 bytes
-    """
-    # Decode base58 G1 key
-    raw_pubkey = base58.b58decode(g1_pubkey)
-    
-    # Validate it's a valid ed25519 public key
-    pubkey = ed25519.Ed25519PublicKey.from_public_bytes(raw_pubkey)
-    
-    # Get raw bytes (should be same as decoded)
-    raw_bytes = pubkey.public_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PublicFormat.Raw
-    )
-    
-    # Add IPFS multihash prefix for ed25519
-    # 0x00 = identity multihash
-    # 0x24 = length (36 bytes total)
-    # 0x08 0x01 = protobuf key type (ed25519)
-    # 0x12 0x20 = protobuf public key field + length (32 bytes)
-    IPFS_ED25519_PREFIX = b'\x00\x24\x08\x01\x12\x20'
-    
-    # Encode as base58
-    peer_id = base58.b58encode(IPFS_ED25519_PREFIX + raw_bytes).decode('ascii')
-    
-    return peer_id
+# Duniter SS58 prefix
+SS58_PREFIX = 4450
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <G1_PUBLIC_KEY>", file=sys.stderr)
+def is_ss58(address: str) -> bool:
+    """Check if the address is in SS58 format (starts with 'g1')."""
+    return address.startswith('g1') and len(address) > 44
+
+def ss58_to_raw(ss58_addr: str) -> bytes:
+    """Convert SS58 address to raw 32-byte public key."""
+    data = base58.b58decode(ss58_addr)
+    # Strip prefix (2 bytes) and checksum (2 bytes)
+    raw = data[2:-2]
+    if len(raw) != 32:
+        raise ValueError(f"Invalid SS58 payload length: {len(raw)} (expected 32)")
+    return raw
+
+def v1_to_raw(v1_pub: str) -> bytes:
+    """Convert Duniter v1 base58 pubkey to raw 32-byte public key."""
+    raw = base58.b58decode(v1_pub)
+    if len(raw) != 32:
+        raise ValueError(f"Invalid v1 pubkey length: {len(raw)} (expected 32)")
+    return raw
+
+def raw_to_ipns(raw_pub: bytes) -> str:
+    """Convert raw 32-byte Ed25519 public key to IPNS key."""
+    # IPNS prefix: \x00$\x08\x01\x12 (multibase identity multicodec for Ed25519)
+    ipns_prefix = b'\x00$\x08\x01\x12 '
+    ipns_key = base58.b58encode(ipns_prefix + raw_pub)
+    return ipns_key.decode('ascii')
+
+def duniter_to_ipns(pubkey: str) -> str:
+    """Convert Duniter v1 or v2 public key to IPNS key."""
+    if is_ss58(pubkey):
+        raw = ss58_to_raw(pubkey)
+    else:
+        raw = v1_to_raw(pubkey)
+    return raw_to_ipns(raw)
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print(__doc__, file=sys.stderr)
         sys.exit(1)
-    
-    g1_key = sys.argv[1]
-    
+
     try:
-        peer_id = g1_to_ipfs(g1_key)
-        print(peer_id)
-    except Exception as e:
+        ipns_key = duniter_to_ipns(sys.argv[1])
+        print(ipns_key)
+    except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
